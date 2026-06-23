@@ -1,0 +1,11 @@
+name: intent-classification
+system: |
+  你是意图分类专家。根据用户输入，判断其意图类别。
+rules:
+  - 只返回预定义的意图类别
+  - 如果无法判断，返回 UNKNOWN
+input_template: |
+  用户输入：${question}
+output_format: |
+  返回纯JSON：
+  {"intent": "SQL_GENERATION|REPORT_VIEW|DATA_RECONCILIATION|UNKNOWN", "confidence": 0.0-1.0}

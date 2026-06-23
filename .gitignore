@@ -1,0 +1,99 @@
+# ---------- Maven ----------
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+.mvn/timing.properties
+.mvn/wrapper/MavenWrapperDownloader.java
+dependency-reduced-pom.xml
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# 保持源码 jar 可被忽略，但允许 wrapper
+!/**/lib/*.jar
+
+# ---------- Node / Frontend ----------
+node_modules/
+dist/
+dist-ssr/
+.npm/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+package-lock.json.bak
+
+# ---------- Logs ----------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 临时脚本 ----------
+.tmp-*.bat
+.tmp-*.sh
+tmp-*
+*.tmp
+
+# ---------- IDE ----------
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ---------- 运行时 / 缓存 ----------
+*.pid
+*.seed
+*.pid.lock
+.cache/
+coverage/
+*.lcov
+
+# ---------- 敏感配置 ----------
+application-local.yml
+application-local.yaml
+application-local.properties
+*.env
+.env
+.env.*
+!.env.example
+
+# ---------- Nacos 配置（含敏感凭证） ----------
+nacos/
+
+# ---------- ChromaDB 运行时数据 ----------
+**/chroma-data/
+*.sqlite3
+
+# ---------- 工具 / 二进制 ----------
+tools/
+
+# ---------- Docker 监控配置（含密码） ----------
+docker/docker-compose.yml
+
+# ---------- 其他 ----------
+hs_err_pid*
+replay_pid*

@@ -1,0 +1,59 @@
+# ============================================================
+# AgentForge 后端 Dockerfile（多阶段构建）
+# 阶段1: Maven 编译
+# 阶段2: JRE 运行
+# ============================================================
+
+# ---- 阶段1: 编译 ----
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+
+# 先复制 POM 文件，利用 Docker 缓存层加速依赖下载
+COPY pom.xml ./
+COPY agentforge-common/pom.xml ./agentforge-common/
+COPY agentforge-framework/pom.xml ./agentforge-framework/
+COPY agentforge-safety/pom.xml ./agentforge-safety/
+COPY agentforge-report/pom.xml ./agentforge-report/
+COPY agentforge-workflow/pom.xml ./agentforge-workflow/
+COPY agentforge-code/pom.xml ./agentforge-code/
+COPY agentforge-web/pom.xml ./agentforge-web/
+COPY agentforge-seeder/pom.xml ./agentforge-seeder/
+
+# 下载依赖（利用缓存）
+RUN mvn dependency:go-offline -pl agentforge-web -am -q || true
+
+# 复制源码
+COPY agentforge-common/src ./agentforge-common/src
+COPY agentforge-framework/src ./agentforge-framework/src
+COPY agentforge-safety/src ./agentforge-safety/src
+COPY agentforge-report/src ./agentforge-report/src
+COPY agentforge-workflow/src ./agentforge-workflow/src
+COPY agentforge-code/src ./agentforge-code/src
+COPY agentforge-web/src ./agentforge-web/src
+
+# 编译（跳过测试）
+RUN mvn package -pl agentforge-web -am -DskipTests -q
+
+# ---- 阶段2: 运行 ----
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+# 创建非 root 用户
+RUN addgroup -g 1000 agentforge && \
+    adduser -u 1000 -G agentforge -s /bin/sh -D agentforge
+
+# 从构建阶段复制 JAR
+COPY --from=builder /build/agentforge-web/target/agentforge-web-*.jar app.jar
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+
+USER agentforge
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-XX:+UseZGC", "-XX:MaxRAMPercentage=75.0", \
+            "-Djava.security.egd=file:/dev/./urandom", \
+            "-jar", "app.jar"]

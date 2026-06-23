@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  chroma:
+    image: chromadb/chroma:0.5.23
+    container_name: chroma-0.5.23
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_PERSIST_DIRECTORY=/chroma/chroma
+      - TZ=Asia/Shanghai
+      - ANONYMIZED_TELEMETRY=FALSE
+      # 100% 解决 Windows 下 CORS 解析错误的写法
+      - CHROMA_SERVER_CORS_ALLOW_ORIGINS=["*"]
+      # 可选：开启认证
+      # - CHROMA_SERVER_AUTHN_PROVIDER=chromadb.auth.token.TokenAuthServerProvider
+      # - CHROMA_SERVER_AUTHN_CREDENTIALS=123456
+      # - CHROMA_AUTH_TOKEN_TRANSPORT_HEADER=X-Chroma-Token

@@ -1,0 +1,36 @@
+# ============================================================
+# AgentForge 前端 Dockerfile（多阶段构建）
+# 阶段1: Node 编译 Vue 项目
+# 阶段2: Nginx 提供静态服务 + API 反向代理
+# ============================================================
+
+# ---- 阶段1: 编译 ----
+FROM node:22-alpine AS builder
+
+WORKDIR /build
+
+# 先复制依赖文件，利用缓存
+COPY agentforge-ui/package*.json ./
+
+# 安装依赖
+RUN npm ci --registry=https://registry.npmmirror.com
+
+# 复制源码并构建
+COPY agentforge-ui/ ./
+RUN npm run build
+
+# ---- 阶段2: Nginx ----
+FROM nginx:alpine
+
+# 删除默认配置
+RUN rm /etc/nginx/conf.d/default.conf
+
+# 复制自定义 nginx 配置
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 复制构建产物
+COPY --from=builder /build/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

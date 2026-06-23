@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS af_conversation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    session_id VARCHAR(64) NOT NULL,
+    user_id BIGINT NOT NULL DEFAULT 0,
+    title VARCHAR(200),
+    status TINYINT DEFAULT 1 COMMENT '1活跃 2归档',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_session (session_id),
+    INDEX idx_user (user_id)
+) COMMENT '对话会话表';

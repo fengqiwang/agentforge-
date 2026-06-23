@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+
+spring:
+  application:
+    name: agentforge
+  profiles:
+    active: dev
+  config:
+    import: nacos:${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 100.118.67.64:10848
+        namespace: public
+      config:
+        server-addr: 100.118.67.64:10848
+        file-extension: yml
+        namespace: public

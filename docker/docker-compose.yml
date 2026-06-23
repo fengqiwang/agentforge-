@@ -1,0 +1,30 @@
+# Week 11 监控栈：Prometheus + Grafana
+# 启动：docker compose -f docker/docker-compose.yml up -d
+# Prometheus: http://localhost:9090  (targets 查看 agentforge 抓取状态)
+# Grafana:    http://localhost:3000  (admin/admin)
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: agentforge-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: agentforge-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - prometheus

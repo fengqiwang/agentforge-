@@ -1,0 +1,391 @@
+/* ============================================================
+   AgentForge 全局设计系统（参考智谱 AI · 现代科技风）
+   设计语言：深蓝主色 + 蓝紫渐变点缀 / 浅色背景 / 大留白居中
+            / 柔和多层阴影 / 现代圆角 / 平滑微交互
+   - --el-*   Element Plus 主题覆盖，全局换肤
+   - --af-*   业务设计令牌：色阶/文字/间距/圆角/阴影/字体
+   ============================================================ */
+:root {
+  /* ---- 主色（深蓝 #1677FF）+ 色阶（Element 主题覆盖） ---- */
+  --el-color-primary:           #1677ff;
+  --el-color-primary-light-3:   #4096ff;
+  --el-color-primary-light-5:   #69b1ff;
+  --el-color-primary-light-7:   #93c5ff;
+  --el-color-primary-light-8:   #bae0ff;
+  --el-color-primary-light-9:   #e6f4ff;   /* 主色极浅底：hover/选中 */
+  --el-color-primary-dark-2:    #0958d9;
+
+  /* ---- 业务主色 + 渐变（智谱标志性蓝/蓝紫） ---- */
+  --af-primary:      #1677ff;
+  --af-primary-grad: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  --af-brand-grad:   linear-gradient(120deg, #1677ff 0%, #4f7bff 45%, #7b61ff 100%); /* 蓝→紫品牌渐变 */
+  --af-accent:       #7b61ff;   /* 辅助：蓝紫点缀 */
+
+  /* ---- 语义色 ---- */
+  --af-success:  #00b42a;
+  --af-danger:   #f53f3f;
+  --af-warning:  #ff7d00;
+
+  /* ---- 三级空间分层（浅色，偏冷灰蓝） ---- */
+  --af-bg-page:        #f7f9fc;   /* L1 页面底层 */
+  --af-bg-card:        #ffffff;   /* L2 卡片容器 */
+  --af-bg-soft:        #f2f5fa;   /* L3 次级内容区 */
+  --af-bg-hover:       #e6f4ff;   /* hover/斑马纹：主色极浅 */
+  --af-bg-dark:        #0f1a3a;   /* 深色 Hero 底（登录页/品牌区） */
+
+  /* ---- 文字三级权重（深炭灰系，非纯黑） ---- */
+  --af-text-1: #1d2129;   /* 模块标题 */
+  --af-text-2: #4e5969;   /* 正文 */
+  --af-text-3: #86909c;   /* 辅助/次要 */
+
+  /* ---- 字号阶梯 12 14 16 18 24 32 ---- */
+  --af-fs-xs:  12px;
+  --af-fs-sm:  14px;
+  --af-fs-md:  16px;
+  --af-fs-lg:  18px;
+  --af-fs-xl:  24px;
+  --af-fs-2xl: 32px;
+
+  /* ---- 数据状态三色 ---- */
+  --af-status-positive: #00b42a;
+  --af-status-warning:  #ff7d00;
+  --af-status-negative: #f53f3f;
+
+  /* ---- 边框：低饱和细描边 ---- */
+  --af-border:       #e5e6eb;
+  --af-border-light: #f0f2f5;
+
+  /* ---- 圆角体系（整体加大，更现代） ---- */
+  --af-radius-lg: 16px;
+  --af-radius-md: 12px;
+  --af-radius-sm: 8px;
+
+  /* ---- 阴影层级体系：三级柔化多层阴影 ---- */
+  --af-shadow-sm:    0 1px 2px rgba(29, 33, 41, 0.04), 0 1px 4px rgba(29, 33, 41, 0.04);
+  --af-shadow-md:    0 4px 12px rgba(29, 33, 41, 0.08), 0 1px 3px rgba(29, 33, 41, 0.04);
+  --af-shadow-lg:    0 8px 24px rgba(29, 33, 41, 0.12), 0 2px 6px rgba(29, 33, 41, 0.06);
+  --af-shadow-focus: 0 0 0 3px rgba(22, 119, 255, 0.12);   /* 聚焦外发光 */
+  --af-shadow-primary: 0 4px 14px rgba(22, 119, 255, 0.32); /* 主色按钮辉光 */
+  --af-shadow-card:  var(--af-shadow-sm);
+
+  /* ---- 间距阶梯 4/8/12/16/24/32/48 ---- */
+  --af-sp-1: 4px;
+  --af-sp-2: 8px;
+  --af-sp-3: 12px;
+  --af-sp-4: 16px;
+  --af-sp-5: 24px;
+  --af-sp-6: 32px;
+  --af-sp-7: 48px;
+
+  /* ---- 过渡：微交互平滑 ---- */
+  --af-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- 布局尺寸 ---- */
+  --af-header-h: 64px;
+  --af-content-max: 1200px;
+  --af-sidebar-w: 260px;
+
+  /* ---- 字体：正文中文优先 / 数据&代码等宽 ---- */
+  --af-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --af-font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #app { height: 100%; }
+body {
+  font-family: var(--af-font-sans);
+  background: var(--af-bg-page);
+  color: var(--af-text-2);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: 0.01em;
+}
+
+/* 全局滚动条美化（智谱式细滚动条） */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d6dbe3; border-radius: 8px; transition: background var(--af-transition); }
+::-webkit-scrollbar-thumb:hover { background: var(--el-color-primary-light-5); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ============================================================
+   页面布局工具类（所有视图统一使用，消除重复 .page 定义）
+   ============================================================ */
+
+/* 页面容器：居中 + 最大宽度 + 上下留白 */
+.af-page {
+  max-width: var(--af-content-max);
+  margin: 0 auto;
+  padding: var(--af-sp-6) var(--af-sp-5) var(--af-sp-7);
+}
+.af-page--wide { max-width: 1440px; }   /* 仪表盘/监控等宽场景 */
+.af-page--narrow { max-width: 960px; }  /* 报表详情窄列 */
+
+/* 页面头部：标题 + 描述 + 右侧操作区 */
+.af-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--af-sp-4);
+  margin-bottom: var(--af-sp-5);
+  flex-wrap: wrap;
+}
+.af-page-head__main { min-width: 0; }
+.af-page-title {
+  font-size: var(--af-fs-xl);
+  font-weight: 700;
+  color: var(--af-text-1);
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+.af-page-desc {
+  margin-top: var(--af-sp-2);
+  font-size: var(--af-fs-sm);
+  color: var(--af-text-3);
+  line-height: 1.6;
+}
+.af-page-head__actions { display: flex; align-items: center; gap: var(--af-sp-2); flex-shrink: 0; }
+
+/* 通用卡片 */
+.af-card {
+  background: var(--af-bg-card);
+  border-radius: var(--af-radius-lg);
+  border: 1px solid var(--af-border-light);
+  box-shadow: var(--af-shadow-sm);
+  padding: var(--af-sp-5);
+  transition: box-shadow var(--af-transition), transform var(--af-transition), border-color var(--af-transition);
+}
+.af-card--hover:hover { box-shadow: var(--af-shadow-md); transform: translateY(-2px); border-color: var(--el-color-primary-light-7); }
+
+/* 渐变文字（标题/Logo/强调） */
+.af-gradient-text {
+  background: var(--af-brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ============================================================
+   Element Plus 组件质感全局升级（智谱风，所有页面自动生效）
+   ============================================================ */
+
+/* —— 按钮：主按钮渐变+辉光，次按钮白底描边 —— */
+.el-button {
+  border-radius: var(--af-radius-sm);
+  font-weight: 500;
+  transition: all var(--af-transition);
+}
+.el-button--primary {
+  background-image: var(--af-primary-grad);
+  border: none;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.24);
+}
+.el-button--primary:hover {
+  background-image: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+  box-shadow: var(--af-shadow-primary);
+  transform: translateY(-1px);
+}
+.el-button--primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(22, 119, 255, 0.2); }
+.el-button--default {
+  background: var(--af-bg-card);
+  border: 1px solid var(--af-border);
+  color: var(--af-text-2);
+}
+.el-button--default:hover {
+  color: var(--af-primary);
+  border-color: var(--el-color-primary-light-5);
+  background: var(--af-bg-hover);
+}
+.el-button--large { height: 44px; font-size: var(--af-fs-sm); }
+.el-button.is-link:hover { background: var(--af-bg-hover); }
+
+/* —— 输入框/文本域：聚焦主色描边 + 外发光 —— */
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: var(--af-radius-sm);
+  box-shadow: 0 0 0 1px var(--af-border) inset !important;
+  transition: box-shadow var(--af-transition);
+}
+.el-input__wrapper:hover,
+.el-textarea__inner:hover { box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset !important; }
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--af-primary) inset, var(--af-shadow-focus) !important;
+}
+.el-input__inner { color: var(--af-text-1); }
+.el-input__inner::placeholder { color: var(--af-text-3); }
+.el-input--large .el-input__wrapper { padding: 0 16px; }
+
+/* —— 表格：极细分隔线 + 浅灰表头 + 弱斑马纹 —— */
+.el-table {
+  --el-table-border-color: var(--af-border-light);
+  --el-table-header-bg-color: var(--af-bg-soft);
+  --el-table-row-hover-bg-color: var(--af-bg-hover);
+  --el-table-header-text-color: var(--af-text-1);
+  --el-table-text-color: var(--af-text-2);
+  border-radius: var(--af-radius-md);
+  overflow: hidden;
+}
+.el-table th.el-table__cell {
+  font-weight: 600;
+  color: var(--af-text-1);
+  background: var(--af-bg-soft) !important;
+}
+.el-table td.el-table__cell { border-bottom: 1px solid var(--af-border-light); }
+
+/* —— 卡片：大圆角 + 柔化阴影 —— */
+.el-card {
+  border-radius: var(--af-radius-lg);
+  border: 1px solid var(--af-border-light);
+  box-shadow: var(--af-shadow-sm);
+  transition: box-shadow var(--af-transition), transform var(--af-transition);
+  overflow: hidden;
+}
+.el-card__header { border-bottom: 1px solid var(--af-border-light); padding: var(--af-sp-4) var(--af-sp-5); font-weight: 600; color: var(--af-text-1); }
+.el-card__body { padding: var(--af-sp-5); }
+
+/* —— 标签：圆角 + 浅底 —— */
+.el-tag { border-radius: var(--af-radius-sm); font-weight: 500; border: none; }
+.el-tag--primary { background: var(--el-color-primary-light-9); color: var(--af-primary); }
+
+/* —— 分页：圆角 + 过渡 —— */
+.el-pagination { --el-pagination-button-color: var(--af-text-2); --el-pagination-hover-color: var(--af-primary); }
+.el-pagination .el-pager li, .el-pagination .btn-prev, .el-pagination .btn-next {
+  border-radius: var(--af-radius-sm);
+  transition: all var(--af-transition);
+}
+.el-pagination .el-pager li.is-active { background: var(--af-primary); color: #fff; }
+
+/* —— 下拉/选择：聚焦态与输入框一致 —— */
+.el-select .el-input__wrapper.is-focus { box-shadow: 0 0 0 1px var(--af-primary) inset, var(--af-shadow-focus) !important; }
+
+/* —— 标签页 tabs：下划线高亮 + 主题色 —— */
+.el-tabs__item {
+  font-size: var(--af-fs-md);
+  font-weight: 500;
+  color: var(--af-text-2);
+  height: 48px;
+}
+.el-tabs__item.is-active { color: var(--af-primary); font-weight: 600; }
+.el-tabs__item:hover { color: var(--af-primary); }
+.el-tabs__active-bar { background: var(--af-primary); height: 3px; border-radius: 2px; }
+.el-tabs__nav-wrap::after { background-color: var(--af-border-light); height: 1px; }
+
+/* —— 对话框 / 抽屉：大圆角 + 柔和阴影 —— */
+.el-dialog { border-radius: var(--af-radius-lg); overflow: hidden; box-shadow: var(--af-shadow-lg); }
+.el-dialog__header { padding: var(--af-sp-5) var(--af-sp-5) var(--af-sp-4); margin-right: 0; border-bottom: 1px solid var(--af-border-light); }
+.el-dialog__title { font-size: var(--af-fs-md); font-weight: 600; color: var(--af-text-1); }
+.el-dialog__body { padding: var(--af-sp-5); }
+.el-drawer__header { margin-bottom: 0; padding: var(--af-sp-5); border-bottom: 1px solid var(--af-border-light); }
+.el-drawer__title { font-size: var(--af-fs-md); font-weight: 600; color: var(--af-text-1); }
+.el-overlay { background: rgba(15, 26, 58, 0.42); backdrop-filter: blur(2px); }
+
+/* —— 统计数值：大号字 + 深色 —— */
+.el-statistic__head { font-size: var(--af-fs-xs); color: var(--af-text-3); margin-bottom: var(--af-sp-1); }
+.el-statistic__number { font-family: var(--af-font-mono); font-weight: 600; color: var(--af-text-1); }
+
+/* —— 描述列表 descriptions —— */
+.el-descriptions__label { color: var(--af-text-3); font-weight: 500; }
+.el-descriptions__content { color: var(--af-text-1); }
+
+/* —— 进度条 progress —— */
+.el-progress-bar__outer { background-color: var(--af-bg-soft); }
+
+/* —— 空状态 empty —— */
+.el-empty__description { color: var(--af-text-3); }
+
+/* —— 警告条 alert：圆角 + 浅底 —— */
+.el-alert { border-radius: var(--af-radius-md); padding: var(--af-sp-3) var(--af-sp-4); }
+
+/* —— 单选/复选：主题色 —— */
+.el-radio__input.is-checked .el-radio__inner,
+.el-checkbox__input.is-checked .el-checkbox__inner { background: var(--af-primary); border-color: var(--af-primary); }
+.el-radio__input.is-checked + .el-radio__label,
+.el-checkbox__input.is-checked + .el-checkbox__label { color: var(--af-primary); }
+
+/* —— 开关 switch —— */
+.el-switch.is-checked .el-switch__core { background-color: var(--af-primary); border-color: var(--af-primary); }
+
+/* —— 链接色统一到主色 —— */
+a { color: var(--af-primary); text-decoration: none; transition: color var(--af-transition); }
+a:hover { color: var(--el-color-primary-light-3); }
+
+/* —— 文字三级权重工具 —— */
+.af-title { color: var(--af-text-1); font-weight: 600; }
+.af-text  { color: var(--af-text-2); }
+.af-muted { color: var(--af-text-3); }
+.af-mono { font-family: var(--af-font-mono); }
+
+/* ============================================================
+   数据展示组件（仪表盘/KPI/状态徽标）
+   ============================================================ */
+
+/* KPI 卡片：大号数字 + 顶部渐变条 + 状态色 */
+.af-kpi {
+  background: var(--af-bg-card);
+  border-radius: var(--af-radius-md);
+  padding: var(--af-sp-5);
+  box-shadow: var(--af-shadow-sm);
+  border: 1px solid var(--af-border-light);
+  transition: box-shadow var(--af-transition), transform var(--af-transition);
+  position: relative;
+  overflow: hidden;
+}
+.af-kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--af-border);
+}
+.af-kpi:hover { box-shadow: var(--af-shadow-md); transform: translateY(-2px); }
+.af-kpi--positive::before { background: var(--af-status-positive); }
+.af-kpi--warning::before  { background: var(--af-status-warning); }
+.af-kpi--negative::before { background: var(--af-status-negative); }
+.af-kpi--primary::before  { background: var(--af-primary-grad); }
+.af-kpi-label { font-size: var(--af-fs-xs); color: var(--af-text-3); margin-bottom: var(--af-sp-2); letter-spacing: 0.02em; }
+.af-kpi-value { font-size: var(--af-fs-xl); font-weight: 700; color: var(--af-text-1); font-family: var(--af-font-mono); line-height: 1.2; }
+.af-kpi-trend { font-size: var(--af-fs-xs); margin-top: var(--af-sp-2); display: inline-flex; align-items: center; gap: 2px; }
+.af-kpi-trend--up   { color: var(--af-status-positive); }
+.af-kpi-trend--down { color: var(--af-status-negative); }
+
+/* 状态徽标 */
+.af-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px var(--af-sp-2);
+  border-radius: 100px;
+  font-size: var(--af-fs-xs); font-weight: 500; line-height: 1.6;
+}
+.af-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.af-status--positive { background: rgba(0, 180, 42, 0.10); color: var(--af-status-positive); }
+.af-status--warning  { background: rgba(255, 125, 0, 0.10); color: var(--af-status-warning); }
+.af-status--negative { background: rgba(245, 63, 63, 0.10); color: var(--af-status-negative); }
+.af-status--neutral  { background: var(--af-bg-soft); color: var(--af-text-2); }
+
+/* 页面/区域标题层级 */
+.af-section-title { font-size: var(--af-fs-lg); font-weight: 600; color: var(--af-text-1); }
+
+/* ============================================================
+   无障碍
+   ============================================================ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--af-primary);
+  outline-offset: 2px;
+  border-radius: var(--af-radius-sm);
+}
+
+/* 尊重用户"减少动态"系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

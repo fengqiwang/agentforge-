@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testname="AgentForge 负载测试" testclass="TestPlan">
+      <stringProp name="TestPlan.comments">Week 11: 10 并发 / 50 次请求，验证 P99 &lt; 5s</stringProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+    </TestPlan>
+    <hashTree>
+      <!-- 线程组：10 并发 × 5 循环 = 50 请求 -->
+      <ThreadGroup guiclass="ThreadGroupGui" testname="10并发-对话查询" testclass="ThreadGroup">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">5</intProp>
+        <longProp name="ThreadGroup.duration">120</longProp>
+        <intProp name="ThreadGroup.loops">5</intProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- CSV 读取测试问题 -->
+        <CSVDataSet guiclass="CSVDataSetGui" testname="CSV Data Set Config">
+          <stringProp name="filename">questions.csv</stringProp>
+          <stringProp name="variableNames">question</stringProp>
+        </CSVDataSet>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testname="/api/analysis/quick/time">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8080</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/api/analysis/quick/time</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <ConstantTimer guiclass="ConstantTimerGui" testname="100ms pause">
+          <stringProp name="ConstantTimer.delay">100</stringProp>
+        </ConstantTimer>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testname="/actuator/health">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8080</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/actuator/health</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+      </hashTree>
+      <!-- 汇总报告 -->
+      <ResultCollector guiclass="SummaryReport" testname="Summary Report"/>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testname="View Results Tree"/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

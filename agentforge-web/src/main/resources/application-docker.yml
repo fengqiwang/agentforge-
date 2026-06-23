@@ -1,0 +1,101 @@
+# ============================================================
+# AgentForge Docker Profile 配置（第三方用户一键部署用）
+# 所有配置内联，无需 Nacos，通过环境变量覆盖
+# ============================================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agentforge
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:synthesis}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:agentforge}
+    password: ${MYSQL_PASSWORD:agentforge123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+
+  flyway:
+    enabled: false
+
+agentforge:
+  chromadb:
+    url: http://${CHROMA_HOST:chroma}:${CHROMA_PORT:8000}
+
+  monitoring:
+    prometheus-url: http://prometheus:9090
+    grafana-url: http://grafana:3000
+
+  webhook:
+    secret: ${WEBHOOK_SECRET:change-me-in-production}
+
+  gitee:
+    token: ${GITEE_TOKEN:}
+    owner-repo: ${GITEE_OWNER_REPO:}
+
+  llm:
+    base-url: ${LLM_BASE_URL:https://api.deepseek.com/}
+    api-key: ${LLM_API_KEY:}
+    chat-model: ${LLM_CHAT_MODEL:deepseek-v4-flash}
+    streaming-model: ${LLM_CHAT_MODEL:deepseek-v4-flash}
+    temperature: 0.7
+    max-tokens: 4096
+    timeout-seconds: 30
+    embedding-base-url: ${EMBEDDING_BASE_URL:https://open.bigmodel.cn/api/paas/v4/}
+    embedding-api-key: ${EMBEDDING_API_KEY:}
+    embedding-model: ${EMBEDDING_MODEL:embedding-3}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: agentforge
+
+resilience4j:
+  retry:
+    instances:
+      llm:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+      sql-executor:
+        max-attempts: 3
+        wait-duration: 500ms
+  circuitbreaker:
+    instances:
+      llm:
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        wait-duration-in-open-state: 60s
+      sql-executor:
+        failure-rate-threshold: 60
+        sliding-window-size: 20
+        wait-duration-in-open-state: 30s
+
+logging:
+  level:
+    com.agentforge: INFO
+    dev.langchain4j: WARN

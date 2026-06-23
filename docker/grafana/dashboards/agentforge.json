@@ -1,0 +1,71 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "title": "Pipeline 执行次数",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "sum(agentforge_pipeline_total)", "legendFormat": "总执行次数" }]
+    },
+    {
+      "title": "LLM 调用次数",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "sum(agentforge_llm_call_total)", "legendFormat": "总调用次数" }]
+    },
+    {
+      "title": "LLM 调用成功率",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "sum(agentforge_llm_call_total{success=\"true\"}) / sum(agentforge_llm_call_total) * 100", "legendFormat": "成功率" }],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "title": "报表生成耗时 (P50/P99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(agentforge_report_generation_duration_seconds_bucket[1m]))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.99, rate(agentforge_report_generation_duration_seconds_bucket[1m]))", "legendFormat": "P99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "LLM 调用耗时 (P50/P99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(agentforge_llm_call_duration_seconds_bucket[1m]))", "legendFormat": "P50 LLM" },
+        { "expr": "histogram_quantile(0.99, rate(agentforge_llm_call_duration_seconds_bucket[1m]))", "legendFormat": "P99 LLM" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "JVM 内存使用",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "jvm_memory_used_bytes{area=\"heap\"}", "legendFormat": "Heap Used" },
+        { "expr": "jvm_memory_max_bytes{area=\"heap\"}", "legendFormat": "Heap Max" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "title": "HikariCP 连接池",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "hikaricp_connections_active", "legendFormat": "Active" },
+        { "expr": "hikaricp_connections_idle", "legendFormat": "Idle" },
+        { "expr": "hikaricp_connections_pending", "legendFormat": "Pending" }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "title": "AgentForge 监控",
+  "uid": "agentforge"
+}
