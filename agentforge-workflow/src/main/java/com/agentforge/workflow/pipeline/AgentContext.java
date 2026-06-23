@@ -3,14 +3,22 @@ package com.agentforge.workflow.pipeline;
 import com.agentforge.common.model.ReportConfig;
 import com.agentforge.common.model.SqlGenerationResult;
 import com.agentforge.common.model.ValidationResult;
-import com.agentforge.report.sql.SqlExecutionService;
-import lombok.Data;
+import com.agentforge.report.sql.ISqlExecutionService;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Data
+/**
+ * Agent 管道上下文，贯穿 Pipeline 各站传递数据。
+ * 注意：不生成 equals/hashCode（包含可变集合 {@link #executedAgents}）。
+ */
+@Getter
+@Setter
+@ToString
 public class AgentContext {
     // ===== 输入 =====
     private String sessionId;
@@ -32,7 +40,7 @@ public class AgentContext {
     private ValidationResult validationResult;
 
     // ===== 执行 =====
-    private SqlExecutionService.ExecutionResult queryResult;
+    private ISqlExecutionService.ExecutionResult queryResult;
     private List<Map<String, Object>> resultRows;
     private Integer resultCount;
 

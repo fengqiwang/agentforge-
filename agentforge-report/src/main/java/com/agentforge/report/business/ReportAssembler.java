@@ -23,8 +23,10 @@ import java.util.Map;
 public class ReportAssembler {
 
     private final AiAnalysisGenerator aiGenerator;
-    private final BusinessReportService reportService;
+    private final IBusinessReportService reportService;
     private final ObjectMapper objectMapper;
+
+    private static final String EMPTY_ANALYSIS_JSON = "{\"sections\":[]}";
 
     /**
      * 组装完整报告：数据 + AI 分析 → 更新到数据库。
@@ -34,14 +36,14 @@ public class ReportAssembler {
      */
     public BusinessReport assemble(BusinessReport report) {
         if (report == null) return null;
-        if (!"COMPLETED".equals(report.getStatus())) {
+        if (!ReportStatus.COMPLETED.getCode().equals(report.getStatus())) {
             log.info("报告非 COMPLETED 状态({})，跳过AI组装: id={}", report.getStatus(), report.getId());
             return report;
         }
 
         Map<String, Object> dataResult = report.getDataResult();
         if (dataResult == null || dataResult.isEmpty()) {
-            report.setAiAnalysis("{\"sections\":[]}");
+            report.setAiAnalysis(EMPTY_ANALYSIS_JSON);
             reportService.update(report);
             return report;
         }
@@ -59,7 +61,7 @@ public class ReportAssembler {
             report.setAiAnalysis(objectMapper.writeValueAsString(analysis));
         } catch (Exception e) {
             log.error("AnalysisResult 序列化失败，降级存储空结构", e);
-            report.setAiAnalysis("{\"sections\":[]}");
+            report.setAiAnalysis(EMPTY_ANALYSIS_JSON);
         }
 
         reportService.update(report);

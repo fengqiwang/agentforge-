@@ -1,10 +1,11 @@
   package com.agentforge.report.sql;
 
-  import com.agentforge.framework.memory.ChatMemoryManager;
+  import com.agentforge.framework.memory.IChatMemoryManager;
   import lombok.RequiredArgsConstructor;
   import lombok.extern.slf4j.Slf4j;
   import org.springframework.stereotype.Component;
 
+  import java.util.ArrayList;
   import java.util.List;
 
   /**
@@ -20,7 +21,7 @@
   @RequiredArgsConstructor
   public class ContextBuilder {
 
-      private final ChatMemoryManager chatMemoryManager;
+      private final IChatMemoryManager chatMemoryManager;
       private final FollowUpDetector followUpDetector;
 
       /**
@@ -40,8 +41,8 @@
 
           // 收集最近3轮对话（user + assistant 配对）
           int maxRounds = 3;
-          List<String> recentUserMsgs = new java.util.ArrayList<>();
-          List<String> recentAssistantMsgs = new java.util.ArrayList<>();
+          List<String> recentUserMsgs = new ArrayList<>();
+          List<String> recentAssistantMsgs = new ArrayList<>();
           for (int i = history.size() - 1; i >= 0 && recentUserMsgs.size() < maxRounds; i--) {
               com.agentforge.common.model.conversation.ChatMessage msg = history.get(i);
               if ("assistant".equals(msg.getRole()) && recentAssistantMsgs.size() < maxRounds) {

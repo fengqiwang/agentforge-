@@ -1,7 +1,7 @@
 package com.agentforge.web.controller;
 
 import com.agentforge.report.insight.AnalysisResult;
-import com.agentforge.report.insight.AnalysisService;
+import com.agentforge.report.insight.IAnalysisService;
 import com.agentforge.report.insight.TransactionAnalyzer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnalysisController {
 
-    private final AnalysisService analysisService;
+    private final IAnalysisService analysisService;
     private final TransactionAnalyzer transactionAnalyzer;
 
     /** 创建多维度分析任务。body: {name, dimensions, dateRangeStart, dateRangeEnd} */

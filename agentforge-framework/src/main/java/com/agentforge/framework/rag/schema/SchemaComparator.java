@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class SchemaComparator {
     public List<SchemaDiff> compare(List<TableSchema> current, Map<String, Integer> snapshot) {
         List<SchemaDiff> diffs = new ArrayList<>();
 
-        Map<String, Integer> currentMap = new java.util.LinkedHashMap<>();
+        Map<String, Integer> currentMap = new LinkedHashMap<>();
         for (TableSchema t : current) {
             int colCount = t.getColumns() != null ? t.getColumns().size() : 0;
             currentMap.put(t.getTableName(), colCount);

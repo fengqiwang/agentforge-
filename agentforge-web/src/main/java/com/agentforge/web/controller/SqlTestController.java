@@ -1,13 +1,16 @@
  package com.agentforge.web.controller;
 
   import com.agentforge.common.model.SqlGenerationResult;
-  import com.agentforge.report.sql.SqlExecutionService;
-  import com.agentforge.report.sql.SqlGeneratorService;
+  import com.agentforge.report.sql.ISqlExecutionService;
+  import com.agentforge.report.sql.ISqlGeneratorService;
   import lombok.RequiredArgsConstructor;
   import org.springframework.web.bind.annotation.*;
 
   import java.util.*;
   import java.util.concurrent.CompletableFuture;
+  import java.util.concurrent.LinkedBlockingQueue;
+  import java.util.concurrent.ThreadPoolExecutor;
+  import java.util.concurrent.TimeUnit;
   import java.util.concurrent.ConcurrentHashMap;
 
   @RestController
@@ -15,10 +18,16 @@
   @RequiredArgsConstructor
   public class SqlTestController {
 
-      private final SqlGeneratorService generatorService;
-      private final SqlExecutionService executionService;
+      private final ISqlGeneratorService generatorService;
+      private final ISqlExecutionService executionService;
 
-      /** 存储批量测试结果 */
+      /** 测试任务专用线程池（有界队列 + CallerRunsPolicy 防 OOM） */
+      private static final ThreadPoolExecutor TEST_EXECUTOR = new ThreadPoolExecutor(
+              1, 2, 60L, TimeUnit.SECONDS,
+              new LinkedBlockingQueue<>(10),
+              new ThreadPoolExecutor.CallerRunsPolicy());
+
+      /** 存储批量测试结果（有界缓存） */
       private final Map<String, Map<String, Object>> testResults = new ConcurrentHashMap<>();
 
       /**
@@ -96,7 +105,7 @@
           String testId = UUID.randomUUID().toString().substring(0, 8);
           testResults.put(testId, Map.of("status", "RUNNING", "total", 30));
 
-          CompletableFuture.runAsync(() -> runFullTest(testId));
+          CompletableFuture.runAsync(() -> runFullTest(testId), TEST_EXECUTOR);
 
           return Map.of("testId", testId, "status", "RUNNING",
                   "pollUrl", "/api/sql/full-test/" + testId);

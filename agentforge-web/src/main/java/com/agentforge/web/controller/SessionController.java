@@ -2,8 +2,8 @@
 
   import com.agentforge.common.model.conversation.ChatMessage;
   import com.agentforge.common.model.conversation.ChatSession;
-  import com.agentforge.framework.memory.ChatMemoryManager;
-  import com.agentforge.framework.memory.SessionService;
+  import com.agentforge.framework.memory.IChatMemoryManager;
+  import com.agentforge.framework.memory.ISessionService;
   import lombok.RequiredArgsConstructor;
   import org.springframework.http.HttpStatus;
   import org.springframework.http.ResponseEntity;
@@ -17,8 +17,8 @@
   @RequiredArgsConstructor
   public class SessionController {
 
-      private final SessionService sessionService;
-      private final ChatMemoryManager chatMemoryManager;
+      private final ISessionService sessionService;
+      private final IChatMemoryManager chatMemoryManager;
 
       /**
        * 创建会话

@@ -25,8 +25,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ReportExporter {
 
-    private final BusinessReportService reportService;
+    private final IBusinessReportService reportService;
     private final ObjectMapper objectMapper;
+
+    /** 附录表格最大展示行数 */
+    private static final int MAX_APPENDIX_ROWS = 50;
 
     /** 渲染报告为完整 HTML 文档。 */
     public String toHtml(Long reportId) {
@@ -120,7 +123,7 @@ public class ReportExporter {
                 }
                 html.append("</tr>");
                 // 数据行（最多 50 行）
-                int limit = Math.min(rows.size(), 50);
+                int limit = Math.min(rows.size(), MAX_APPENDIX_ROWS);
                 for (int i = 0; i < limit; i++) {
                     Map<?, ?> row = (Map<?, ?>) rows.get(i);
                     html.append("<tr>");
@@ -131,7 +134,7 @@ public class ReportExporter {
                 }
             }
             html.append("</table>");
-            if (rows.size() > 50) {
+            if (rows.size() > MAX_APPENDIX_ROWS) {
                 html.append("<p style='color:#999;font-size:12px'>（仅显示前 50 行，共 ")
                         .append(rows.size()).append(" 行）</p>");
             }

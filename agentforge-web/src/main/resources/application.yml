@@ -12,9 +12,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 100.118.67.64:10848
+        server-addr:
         namespace: public
       config:
-        server-addr: 100.118.67.64:10848
+        server-addr:
         file-extension: yml
         namespace: public

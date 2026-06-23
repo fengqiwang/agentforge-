@@ -1,10 +1,10 @@
 package com.agentforge.web.controller;
 
 import com.agentforge.common.model.reconciliation.ReconciliationResult;
-import com.agentforge.report.reconciliation.ReconciliationExporter;
+import com.agentforge.report.reconciliation.IReconciliationExporter;
+import com.agentforge.report.reconciliation.IReconciliationService;
+import com.agentforge.report.reconciliation.IReconciliationSummaryGenerator;
 import com.agentforge.report.reconciliation.ReconciliationRuleConfig;
-import com.agentforge.report.reconciliation.ReconciliationService;
-import com.agentforge.report.reconciliation.ReconciliationSummaryGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -22,9 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ReconciliationExportController {
 
-    private final ReconciliationService reconciliationService;
-    private final ReconciliationExporter exporter;
-    private final ReconciliationSummaryGenerator summaryGenerator;
+    private final IReconciliationService reconciliationService;
+    private final IReconciliationExporter exporter;
+    private final IReconciliationSummaryGenerator summaryGenerator;
     private final ReconciliationRuleConfig ruleConfig;
 
     @GetMapping("/{id}/summary")

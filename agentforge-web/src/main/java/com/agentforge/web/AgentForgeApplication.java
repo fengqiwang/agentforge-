@@ -1,11 +1,13 @@
 package com.agentforge.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@Slf4j
 @EnableScheduling
 @EnableAsync
 @SpringBootApplication
@@ -14,6 +16,6 @@ public class AgentForgeApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AgentForgeApplication.class, args);
-        System.out.println("AgentForgeApplication 启动成功");
+        log.info("AgentForgeApplication 启动成功");
     }
 }

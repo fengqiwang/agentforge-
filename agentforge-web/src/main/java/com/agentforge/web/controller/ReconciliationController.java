@@ -1,7 +1,9 @@
 package com.agentforge.web.controller;
 
 import com.agentforge.common.model.reconciliation.ReconciliationResult;
-import com.agentforge.report.reconciliation.ReconciliationService;
+import com.agentforge.report.reconciliation.IReconciliationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ReconciliationController {
 
-    private final ReconciliationService reconciliationService;
+    private final IReconciliationService reconciliationService;
+    private final ObjectMapper objectMapper;
 
     /**
      * 上传对账文件并预览
@@ -74,8 +77,7 @@ public class ReconciliationController {
             // 解析列映射JSON
             Map<String, String> columnMapping = null;
             if (columnMappingJson != null && !columnMappingJson.isBlank()) {
-                columnMapping = new com.fasterxml.jackson.databind.ObjectMapper()
-                        .readValue(columnMappingJson, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+                columnMapping = objectMapper.readValue(columnMappingJson, new TypeReference<>() {});
             }
 
             // 如果没有提供映射，先解析文件自动检测

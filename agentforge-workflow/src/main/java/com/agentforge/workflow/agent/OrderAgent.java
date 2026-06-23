@@ -1,6 +1,6 @@
 package com.agentforge.workflow.agent;
 
-  import com.agentforge.report.sql.SqlExecutionService;
+  import com.agentforge.report.sql.ISqlExecutionService;
   import com.agentforge.workflow.pipeline.Agent;
   import com.agentforge.workflow.pipeline.AgentContext;
   import lombok.RequiredArgsConstructor;
@@ -16,7 +16,41 @@ package com.agentforge.workflow.agent;
   @RequiredArgsConstructor
   public class OrderAgent implements Agent {
 
-      private final SqlExecutionService executionService;
+      private final ISqlExecutionService executionService;
+
+      /** 工单状态分布查询 */
+      private static final String SQL_STATUS_DISTRIBUTION =
+              "SELECT CASE status " +
+              "WHEN 1 THEN '未处理' WHEN 2 THEN '已处理' " +
+              "WHEN 3 THEN '审核退回' WHEN 4 THEN '已撤销' END AS status_name, " +
+              "COUNT(*) AS cnt " +
+              "FROM jxallinpay_busi_order " +
+              "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+              "GROUP BY status ORDER BY cnt DESC";
+
+      /** 工单城市分布查询 */
+      private static final String SQL_CITY_DISTRIBUTION =
+              "SELECT city, COUNT(*) AS cnt " +
+              "FROM jxallinpay_busi_order " +
+              "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+              "AND city IS NOT NULL AND city != '' " +
+              "GROUP BY city ORDER BY cnt DESC LIMIT 20";
+
+      /** 工单业务类型分布查询 */
+      private static final String SQL_BUSI_TYPE_DISTRIBUTION =
+              "SELECT busi_type, COUNT(*) AS cnt " +
+              "FROM jxallinpay_busi_order " +
+              "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+              "GROUP BY busi_type ORDER BY cnt DESC";
+
+      /** 最近工单列表（默认查询） */
+      private static final String SQL_RECENT_ORDERS =
+              "SELECT id, cusid, cusname, busi_type, city, status, " +
+              "CASE status WHEN 1 THEN '未处理' WHEN 2 THEN '已处理' " +
+              "WHEN 3 THEN '审核退回' WHEN 4 THEN '已撤销' END AS status_name, " +
+              "createtime " +
+              "FROM jxallinpay_busi_order " +
+              "ORDER BY createtime DESC LIMIT 50";
 
       @Override
       public String getName() { return "OrderAgent"; }
@@ -48,7 +82,7 @@ package com.agentforge.workflow.agent;
           String sql = pickTemplate(q);
           log.info("[OrderAgent] 选用 SQL: {}", sql);
 
-          SqlExecutionService.ExecutionResult result = executionService.execute(sql, ctx.getSessionId());
+          ISqlExecutionService.ExecutionResult result = executionService.execute(sql, ctx.getSessionId());
           ctx.setGeneratedSql(sql);
           ctx.setValidatedSql(sql);
           ctx.setQueryResult(result);
@@ -68,35 +102,17 @@ package com.agentforge.workflow.agent;
 
           // 状态分布（status 是 tinyint，需要 CASE 翻译）
           if (q.contains("状态") && (q.contains("分布") || q.contains("统计") || q.contains("分类"))) {
-              return "SELECT CASE status " +
-                     "WHEN 1 THEN '未处理' WHEN 2 THEN '已处理' " +
-                     "WHEN 3 THEN '审核退回' WHEN 4 THEN '已撤销' END AS status_name, " +
-                     "COUNT(*) AS cnt " +
-                     "FROM jxallinpay_busi_order " +
-                     "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
-                     "GROUP BY status ORDER BY cnt DESC";
+              return SQL_STATUS_DISTRIBUTION;
           }
           // 城市分布
           if (q.contains("城市") || q.contains("地区")) {
-              return "SELECT city, COUNT(*) AS cnt " +
-                     "FROM jxallinpay_busi_order " +
-                     "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
-                     "AND city IS NOT NULL AND city != '' " +
-                     "GROUP BY city ORDER BY cnt DESC LIMIT 20";
+              return SQL_CITY_DISTRIBUTION;
           }
           // 业务类型分布
           if (q.contains("类型") || q.contains("业务")) {
-              return "SELECT busi_type, COUNT(*) AS cnt " +
-                     "FROM jxallinpay_busi_order " +
-                     "WHERE createtime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
-                     "GROUP BY busi_type ORDER BY cnt DESC";
+              return SQL_BUSI_TYPE_DISTRIBUTION;
           }
-          // 默认：最近工单列表（真实列名）
-          return "SELECT id, cusid, cusname, busi_type, city, status, " +
-                 "CASE status WHEN 1 THEN '未处理' WHEN 2 THEN '已处理' " +
-                 "WHEN 3 THEN '审核退回' WHEN 4 THEN '已撤销' END AS status_name, " +
-                 "createtime " +
-                 "FROM jxallinpay_busi_order " +
-                 "ORDER BY createtime DESC LIMIT 50";
+          // 默认：最近工单列表
+          return SQL_RECENT_ORDERS;
       }
   }

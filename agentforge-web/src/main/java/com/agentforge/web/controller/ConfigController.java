@@ -1,6 +1,6 @@
 package com.agentforge.web.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.agentforge.web.config.FrontendConfigProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,33 +16,18 @@ import java.util.Map;
 @RequestMapping("/api/config")
 public class ConfigController {
 
-    @Value("${agentforge.monitoring.prometheus-url}")
-    private String prometheusUrl;
+    private final FrontendConfigProperties frontendConfig;
 
-    @Value("${agentforge.monitoring.grafana-url}")
-    private String grafanaUrl;
-
-    @Value("${agentforge.chromadb.url}")
-    private String chromadbUrl;
-
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private String redisPort;
-
-    @Value("${spring.datasource.url}")
-    private String datasourceUrl;
+    public ConfigController(FrontendConfigProperties frontendConfig) {
+        this.frontendConfig = frontendConfig;
+    }
 
     @GetMapping
     public Map<String, Object> get() {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("prometheusUrl", prometheusUrl);
-        m.put("grafanaUrl", grafanaUrl);
-        m.put("chromadbUrl", chromadbUrl);
-        m.put("redisHost", redisHost);
-        m.put("redisPort", redisPort);
-        m.put("mysqlJdbcUrl", datasourceUrl);
+        m.put("prometheusUrl", frontendConfig.getMonitoring().getPrometheusUrl());
+        m.put("grafanaUrl", frontendConfig.getMonitoring().getGrafanaUrl());
+        m.put("chromadbUrl", frontendConfig.getChromadb().getUrl());
         return m;
     }
 }

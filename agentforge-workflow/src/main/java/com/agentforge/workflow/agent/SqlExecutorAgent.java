@@ -1,6 +1,6 @@
 package com.agentforge.workflow.agent;
 
-  import com.agentforge.report.sql.SqlExecutionService;
+  import com.agentforge.report.sql.ISqlExecutionService;
   import com.agentforge.workflow.pipeline.Agent;
   import com.agentforge.workflow.pipeline.AgentContext;
   import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -17,7 +17,7 @@ package com.agentforge.workflow.agent;
   @RequiredArgsConstructor
   public class SqlExecutorAgent implements Agent {
 
-      private final SqlExecutionService executionService;
+      private final ISqlExecutionService executionService;
 
       @Override
       public String getName() { return "SqlExecutorAgent"; }
@@ -59,7 +59,7 @@ package com.agentforge.workflow.agent;
 
           log.info("[SqlExecutorAgent] 执行 SQL: {}", sql);
           try {
-              SqlExecutionService.ExecutionResult result = executionService.execute(sql, ctx.getSessionId());
+              ISqlExecutionService.ExecutionResult result = executionService.execute(sql, ctx.getSessionId());
               ctx.setQueryResult(result);
               if (result.isSuccess() && result.getRows() != null) {
                   ctx.setResultRows(result.getRows());

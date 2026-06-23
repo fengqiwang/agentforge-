@@ -14,7 +14,7 @@ package com.agentforge.report.business;
   @RequiredArgsConstructor
   public class ReportScheduler {
 
-      private final ReportTemplateService templateService;
+      private final IReportTemplateService templateService;
       private final ReportExecutor reportExecutor;
 
       /** 每分钟检查一次是否有模板到了执行时间 */

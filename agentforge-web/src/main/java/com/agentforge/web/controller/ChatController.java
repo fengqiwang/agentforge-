@@ -1,9 +1,9 @@
 package com.agentforge.web.controller;
 
-import com.agentforge.framework.memory.ChatMemoryManager;
-import com.agentforge.framework.memory.SessionService;
+import com.agentforge.framework.memory.IChatMemoryManager;
+import com.agentforge.framework.memory.ISessionService;
 import com.agentforge.report.sql.ContextBuilder;
-import com.agentforge.web.service.ChatStreamService;
+import com.agentforge.web.service.IChatStreamService;
 import dev.langchain4j.model.chat.ChatModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +21,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class ChatController {
 
     private final ChatModel chatModel;
-    private final ChatMemoryManager chatMemoryManager;
-    private final SessionService sessionService;
+    private final IChatMemoryManager chatMemoryManager;
+    private final ISessionService sessionService;
     private final ContextBuilder contextBuilder;
-    private final ChatStreamService chatStreamService;
+    private final IChatStreamService chatStreamService;
 
     @GetMapping("/chat")
     public String chat(@RequestParam String message) {

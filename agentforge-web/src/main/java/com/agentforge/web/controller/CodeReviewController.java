@@ -1,6 +1,6 @@
 package com.agentforge.web.controller;
 
-import com.agentforge.web.service.CodeReviewService;
+import com.agentforge.web.service.ICodeReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CodeReviewController {
 
-    private final CodeReviewService codeReviewService;
+    private final ICodeReviewService codeReviewService;
 
     /** Review 历史列表。 */
     @GetMapping("/history")

@@ -4,8 +4,8 @@
   import com.agentforge.common.model.SqlGenerationResult;
   import com.agentforge.report.builder.ChartRecommender;
   import com.agentforge.report.builder.DataTypeDetector;
-  import com.agentforge.report.sql.SqlExecutionService;
-  import com.agentforge.report.sql.SqlGeneratorService;
+  import com.agentforge.report.sql.ISqlExecutionService;
+  import com.agentforge.report.sql.ISqlGeneratorService;
   import lombok.RequiredArgsConstructor;
   import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +18,8 @@
 
       private final DataTypeDetector dataTypeDetector;
       private final ChartRecommender chartRecommender;
-      private final SqlGeneratorService generatorService;
-      private final SqlExecutionService executionService;
+      private final ISqlGeneratorService generatorService;
+      private final ISqlExecutionService executionService;
 
       /**
        * 端到端：问题 → SQL → 执行 → 检测类型 → 推荐图表

@@ -1,7 +1,7 @@
 package com.agentforge.workflow.agent;
 
   import com.agentforge.common.model.SqlGenerationResult;
-  import com.agentforge.report.sql.SqlGeneratorService;
+  import com.agentforge.report.sql.ISqlGeneratorService;
   import com.agentforge.workflow.pipeline.Agent;
   import com.agentforge.workflow.pipeline.AgentContext;
   import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -17,7 +17,7 @@ package com.agentforge.workflow.agent;
   @RequiredArgsConstructor
   public class SqlGeneratorAgent implements Agent {
 
-      private final SqlGeneratorService delegate;
+      private final ISqlGeneratorService delegate;
 
       @Override
       public String getName() { return "SqlGeneratorAgent"; }

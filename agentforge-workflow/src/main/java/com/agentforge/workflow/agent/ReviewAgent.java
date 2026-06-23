@@ -13,6 +13,11 @@ package com.agentforge.workflow.agent;
   @Component
   public class ReviewAgent implements Agent {
 
+      /** 异常大额阈值：1 亿元 */
+      private static final BigDecimal LARGE_AMOUNT_THRESHOLD = new BigDecimal("100000000");
+      /** 结果集过大警告阈值：1 万行 */
+      private static final int LARGE_RESULT_THRESHOLD = 10000;
+
       @Override
       public String getName() { return "ReviewAgent"; }
 
@@ -62,7 +67,7 @@ package com.agentforge.workflow.agent;
                   if ((col.contains("amount") || col.contains("amt") || col.contains("fee"))
                           && e.getValue() instanceof Number num) {
                       BigDecimal v = new BigDecimal(num.toString());
-                      if (v.compareTo(new BigDecimal("100000000")) > 0) {
+                      if (v.compareTo(LARGE_AMOUNT_THRESHOLD) > 0) {
                           note.append("检测到异常大额: ").append(col).append("=").append(v).append("\n");
                       }
                   }
@@ -70,7 +75,7 @@ package com.agentforge.workflow.agent;
           }
 
           // 3. 数量异常（超过 1 万行）
-          if (ctx.getResultCount() != null && ctx.getResultCount() > 10000) {
+          if (ctx.getResultCount() != null && ctx.getResultCount() > LARGE_RESULT_THRESHOLD) {
               note.append("结果集过大: ").append(ctx.getResultCount())
                   .append(" 行，建议增加 LIMIT 或时间范围\n");
           }

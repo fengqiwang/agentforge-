@@ -15,12 +15,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BusinessReportController {
 
-    private final ReportTemplateService templateService;
+    private final IReportTemplateService templateService;
     private final ReportExecutor reportExecutor;
-    private final BusinessReportService reportService;
+    private final IBusinessReportService reportService;
     private final ReportAssembler reportAssembler;
     private final ReportExporter reportExporter;
-    private final ReportComparisonService comparisonService;
+    private final IReportComparisonService comparisonService;
 
     // ===== 模板 CRUD =====
     @PostMapping
@@ -67,7 +67,7 @@ public class BusinessReportController {
             return Map.of("error", "报告不存在: " + id);
         }
         if ((report.getAiAnalysis() == null || report.getAiAnalysis().isBlank())
-                && "COMPLETED".equals(report.getStatus())) {
+                && ReportStatus.COMPLETED.getCode().equals(report.getStatus())) {
             report = reportAssembler.assemble(report);
         }
         return reportAssembler.toFullReportMap(report);

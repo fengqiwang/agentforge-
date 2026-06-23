@@ -1,7 +1,7 @@
 package com.agentforge.web.controller;
 
   import com.agentforge.common.model.ReportConfig;
-  import com.agentforge.report.builder.ReportBuilderService;
+  import com.agentforge.report.builder.IReportBuilderService;
   import lombok.RequiredArgsConstructor;
   import org.springframework.http.HttpStatus;
   import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ package com.agentforge.web.controller;
   @RequiredArgsConstructor
   public class ReportController {
 
-      private final ReportBuilderService reportBuilderService;
+      private final IReportBuilderService reportBuilderService;
 
       /**
        * 从自然语言问题构建报表配置

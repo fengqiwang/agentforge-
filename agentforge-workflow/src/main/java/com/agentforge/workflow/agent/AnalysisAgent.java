@@ -1,6 +1,6 @@
 package com.agentforge.workflow.agent;
 
-  import com.agentforge.report.sql.SqlExecutionService;
+  import com.agentforge.report.sql.ISqlExecutionService;
   import com.agentforge.workflow.pipeline.Agent;
   import com.agentforge.workflow.pipeline.AgentContext;
   import lombok.RequiredArgsConstructor;
@@ -17,7 +17,31 @@ package com.agentforge.workflow.agent;
   @RequiredArgsConstructor
   public class AnalysisAgent implements Agent {
 
-      private final SqlExecutionService executionService;
+      private final ISqlExecutionService executionService;
+
+      /** 商户总数查询：收银宝(正常) + 睡眠商户(syb_merchant_rub) */
+      private static final String SQL_TOTAL_MERCHANTS =
+              "SELECT COUNT(DISTINCT cusid) AS total_merchants FROM (" +
+              "SELECT cusid FROM syb_merchant UNION SELECT cusid FROM syb_merchant_rub) tmp";
+
+      /** 活跃商户查询：收银宝 + 收付通近30天有交易的商户（排除特定 transtype） */
+      private static final String SQL_ACTIVE_MERCHANTS =
+              "SELECT COUNT(DISTINCT cusid) AS active_merchants FROM (" +
+              "SELECT DISTINCT cusid FROM syb_transuminfor " +
+              "WHERE settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d') " +
+              "UNION SELECT DISTINCT cusid FROM tlt_transuminfor " +
+              "WHERE settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d') " +
+              "AND transtype NOT IN ('结算-T+0代收付款','结算-代收付款','结算-代付失败退款','提现')) tmp";
+
+      /** 流失商户查询：总商户 - 近30天有交易的商户 */
+      private static final String SQL_CHURN_MERCHANTS =
+              "SELECT COUNT(DISTINCT cusid) AS churn_merchants FROM (" +
+              "SELECT cusid FROM syb_merchant UNION SELECT cusid FROM syb_merchant_rub) m " +
+              "WHERE NOT EXISTS (SELECT 1 FROM syb_transuminfor t WHERE t.cusid = m.cusid " +
+              "AND t.settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d'))";
+
+      private static final String[] ANALYSIS_STEP_NAMES =
+              {"total_merchants", "active_merchants", "churn_merchants"};
 
       @Override
       public String getName() { return "AnalysisAgent"; }
@@ -49,29 +73,16 @@ package com.agentforge.workflow.agent;
           Map<String, Object> stepResults = new LinkedHashMap<>();
           List<String> executedSqls = new ArrayList<>();
 
-          // 对齐 Claude.md：总商户=收银宝(正常)+睡眠(syb_merchant_rub)；活跃=收银宝+收付通近30天交易商户；流失=总-活跃
-          String[] sqls = {
-              "SELECT COUNT(DISTINCT cusid) AS total_merchants FROM (" +
-                  "SELECT cusid FROM syb_merchant UNION SELECT cusid FROM syb_merchant_rub) tmp",
-              "SELECT COUNT(DISTINCT cusid) AS active_merchants FROM (" +
-                  "SELECT DISTINCT cusid FROM syb_transuminfor WHERE settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d') " +
-                  "UNION SELECT DISTINCT cusid FROM tlt_transuminfor WHERE settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d') " +
-                  "AND transtype NOT IN ('结算-T+0代收付款','结算-代收付款','结算-代付失败退款','提现')) tmp",
-              "SELECT COUNT(DISTINCT cusid) AS churn_merchants FROM (" +
-                  "SELECT cusid FROM syb_merchant UNION SELECT cusid FROM syb_merchant_rub) m " +
-                  "WHERE NOT EXISTS (SELECT 1 FROM syb_transuminfor t WHERE t.cusid = m.cusid " +
-                  "AND t.settledate >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y%m%d'))"
-          };
-          String[] stepNames = {"total_merchants", "active_merchants", "churn_merchants"};
+          String[] sqls = {SQL_TOTAL_MERCHANTS, SQL_ACTIVE_MERCHANTS, SQL_CHURN_MERCHANTS};
 
           for (int i = 0; i < sqls.length; i++) {
               String sql = sqls[i];
               log.info("[AnalysisAgent] step{}: {}", i, sql);
               executedSqls.add(sql);
-              SqlExecutionService.ExecutionResult r = executionService.execute(sql, ctx.getSessionId());
+              ISqlExecutionService.ExecutionResult r = executionService.execute(sql, ctx.getSessionId());
               if (r.isSuccess() && r.getRows() != null && !r.getRows().isEmpty()) {
                   Object value = r.getRows().get(0).values().iterator().next();
-                  stepResults.put(stepNames[i], value);
+                  stepResults.put(ANALYSIS_STEP_NAMES[i], value);
                   allSteps.add(r.getRows().get(0));
               }
           }

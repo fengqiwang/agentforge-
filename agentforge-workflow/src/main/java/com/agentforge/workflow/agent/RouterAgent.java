@@ -2,6 +2,8 @@ package com.agentforge.workflow.agent;
 
 import com.agentforge.workflow.pipeline.Agent;
 import com.agentforge.workflow.pipeline.AgentContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,9 +27,11 @@ public class RouterAgent implements Agent {
             Pattern.compile("\\b(REPORT|ANALYSIS|ORDER|CODE|UNKNOWN)\\b", Pattern.CASE_INSENSITIVE);
 
     private final ChatModel chatModel;
+    private final ObjectMapper objectMapper;
 
-    public RouterAgent(ChatModel chatModel) {
+    public RouterAgent(ChatModel chatModel, ObjectMapper objectMapper) {
         this.chatModel = chatModel;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -151,8 +155,7 @@ public class RouterAgent implements Agent {
 
         if (text.startsWith("{")) {
             try {
-                com.fasterxml.jackson.databind.JsonNode node =
-                        new com.fasterxml.jackson.databind.ObjectMapper().readTree(text);
+                JsonNode node = objectMapper.readTree(text);
                 String v = node.path("intent").asText("UNKNOWN").toUpperCase();
                 if (VALID_INTENTS.contains(v)) return v;
             } catch (Exception ignored) {}

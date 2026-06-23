@@ -1,5 +1,6 @@
 package com.agentforge.report.business;
 
+  import com.agentforge.common.constant.DateFormats;
   import com.fasterxml.jackson.databind.ObjectMapper;
   import lombok.RequiredArgsConstructor;
   import lombok.extern.slf4j.Slf4j;
@@ -7,7 +8,6 @@ package com.agentforge.report.business;
   import org.springframework.stereotype.Component;
 
   import java.time.LocalDate;
-  import java.time.format.DateTimeFormatter;
   import java.util.*;
 
   @Slf4j
@@ -16,8 +16,8 @@ package com.agentforge.report.business;
   public class ReportExecutor {
 
       private final JdbcTemplate jdbcTemplate;
-      private final ReportTemplateService templateService;
-      private final BusinessReportService reportService;
+      private final IReportTemplateService templateService;
+      private final IBusinessReportService reportService;
       private final ObjectMapper objectMapper;
       private final ReportAssembler reportAssembler;
 
@@ -28,8 +28,8 @@ package com.agentforge.report.business;
           BusinessReport report = new BusinessReport();
           report.setTemplateId(templateId);
           report.setTemplateName(template.getName());
-          report.setReportDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")));
-          report.setStatus("GENERATING");
+          report.setReportDate(LocalDate.now().format(DateFormats.YEAR_MONTH));
+          report.setStatus(ReportStatus.GENERATING.getCode());
           reportService.save(report);
 
           // 2. 逐条执行SQL，收集结果
@@ -40,18 +40,18 @@ package com.agentforge.report.business;
                   dataResult.put(query.getName(), queryResult);
               }
               report.setDataResult(dataResult);
-              report.setStatus("COMPLETED");
+              report.setStatus(ReportStatus.COMPLETED.getCode());
           } catch (Exception e) {
-              log.error("报告执行失败: template={} query={}", templateId, e.getMessage());
+              log.error("报告执行失败: template={}", templateId, e);
               report.setDataResult(dataResult);  // 保留已成功的部分
-              report.setStatus("FAILED");
-              report.setAiAnalysis("执行错误: " + e.getMessage());
+              report.setStatus(ReportStatus.FAILED.getCode());
+              report.setErrorMessage("执行错误: " + e.getMessage());
           }
 
           reportService.update(report);
 
           // Week 8：执行成功后自动组装 AI 分析
-          if ("COMPLETED".equals(report.getStatus())) {
+          if (ReportStatus.COMPLETED.getCode().equals(report.getStatus())) {
               try {
                   report = reportAssembler.assemble(report);
               } catch (Exception e) {
@@ -66,7 +66,7 @@ package com.agentforge.report.business;
           if (sql.endsWith(";")) sql = sql.substring(0, sql.length() - 1);
 
           // 只读安全：包装为子查询，禁止写操作
-          String safeSql = "SELECT * FROM (" + sql + ") AS _report_sub WHERE 1=0 OR 1=1";
+          String safeSql = "SELECT * FROM (" + sql + ") AS _report_sub";
           List<Map<String, Object>> rows = jdbcTemplate.queryForList(safeSql);
 
           Map<String, Object> result = new LinkedHashMap<>();

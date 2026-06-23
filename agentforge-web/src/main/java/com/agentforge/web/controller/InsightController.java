@@ -1,6 +1,6 @@
 package com.agentforge.web.controller;
 
-import com.agentforge.report.insight.InsightService;
+import com.agentforge.report.insight.IInsightService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InsightController {
 
-    private final InsightService insightService;
+    private final IInsightService insightService;
 
     /** 手动生成洞察。body: {periodType, start, end} */
     @PostMapping("/generate")

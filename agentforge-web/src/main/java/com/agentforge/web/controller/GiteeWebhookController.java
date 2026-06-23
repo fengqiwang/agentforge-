@@ -1,17 +1,15 @@
 package com.agentforge.web.controller;
 
-import com.agentforge.code.webhook.GiteeWebhookPayload;
-import com.agentforge.code.webhook.WebhookParser;
-import com.agentforge.code.webhook.WebhookSignature;
-import com.agentforge.web.service.CodeReviewService;
+import com.agentforge.web.service.ICodeReviewService;
+import com.agentforge.web.service.IGiteeWebhookService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,12 +19,13 @@ import java.util.stream.Collectors;
  *
  * <p>端点：
  * <ul>
- *   <li>{@code POST /api/webhook/gitee} — Gitee 实际推送的 merge_request 事件（HMAC 签名验证）</li>
+ *   <li>{@code POST /api/webhook/gitee} — Gitee 推送的 merge_request 事件（HMAC 签名验证）</li>
  *   <li>{@code POST /api/webhook/gitee/test} — 直传 diff 跑审查（本地测试用，免签名）</li>
  *   <li>{@code GET  /api/webhook/reviews} — 查询审查历史</li>
  * </ul>
  *
- * <p>签名验证失败返回 403，对应验收 P3-02。
+ * <p>Controller 仅负责 HTTP 层面：读取原始 body + 调用 Service + 返回 HTTP 响应。
+ * 签名验证、Payload 解析、数据提取、审查触发等业务逻辑全部下沉至 {@link IGiteeWebhookService}。
  */
 @Slf4j
 @RestController
@@ -34,64 +33,44 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GiteeWebhookController {
 
-    private final WebhookSignature signature;
-    private final WebhookParser parser;
-    private final CodeReviewService codeReviewService;
+    private final IGiteeWebhookService webhookService;
+    private final ICodeReviewService codeReviewService;
 
     private static final String TOKEN_HEADER = "X-Gitee-Token";
 
     /**
      * Gitee merge_request 事件入口。
-     * 读取原始 body（HMAC 需原始字节），验证签名后解析并触发审查。
      */
     @PostMapping(value = "/gitee", consumes = "application/json")
     public ResponseEntity<?> handleGitee(HttpServletRequest request,
                                          @RequestHeader(value = TOKEN_HEADER, required = false) String token) {
         String rawBody = readRawBody(request);
-
-        // 1. 签名验证
-        if (!signature.verify(token, rawBody)) {
-            log.warn("Webhook 签名验证失败，拒绝请求");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "签名验证失败", "code", 403));
+        if (rawBody == null) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "读取请求体失败"));
         }
 
-        // 2. 解析 payload
-        GiteeWebhookPayload payload = parser.parse(rawBody);
-        if (payload == null || payload.getPullRequest() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "无效的 payload"));
-        }
-
-        GiteeWebhookPayload.PullRequest pr = payload.getPullRequest();
-        String repoUrl = parser.extractRepoUrl(payload);
-        String commitId = parser.extractCommitId(payload);
-        Integer prNumber = pr.getNumber();
-
-        log.info("收到 Gitee Webhook: action={} repo={} pr={}", payload.getAction(), repoUrl, prNumber);
-
-        // 3. 异步处理：拉取 diff + 审查 + 评论，立即返回（避免 Gitee 10s 超时）
-        String patchUrl = pr.getPatchUrl();
-        codeReviewService.reviewAsyncWithFetch(repoUrl, prNumber, commitId, patchUrl);
-
-        return ResponseEntity.accepted()
-                .body(Map.of("status", "accepted", "prNumber", prNumber, "message", "已异步排队处理"));
+        IGiteeWebhookService.WebhookResult result = webhookService.handleWebhook(rawBody, token);
+        return ResponseEntity.status(result.httpStatus()).body(result.body());
     }
 
     /**
-     * 测试端点：直接传入 {repoUrl, prNumber, commitId, diff}，跳过签名，
-     * 用于本地验证 diff 解析 + review + 存储全链路。
+     * 测试端点：直传 diff 跑审查（免签名验证），用于本地调试。
      */
     @PostMapping("/gitee/test")
     public ResponseEntity<?> testReview(@RequestBody Map<String, Object> body) {
         String repoUrl = (String) body.getOrDefault("repoUrl", "local/test-repo");
-        Integer prNumber = toInt(body.get("prNumber"), 1);
+        Integer prNumber = body.get("prNumber") instanceof Number n
+                ? n.intValue() : 1;
         String commitId = (String) body.get("commitId");
         String diff = (String) body.get("diff");
-        if (diff == null || diff.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "缺少 diff"));
+
+        try {
+            return ResponseEntity.ok(
+                    webhookService.testReview(repoUrl, prNumber, commitId, diff));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-        Map<String, Object> report = codeReviewService.reviewAndStore(repoUrl, prNumber, commitId, diff);
-        return ResponseEntity.ok(report);
     }
 
     /** 审查历史。 */
@@ -100,21 +79,17 @@ public class GiteeWebhookController {
         return codeReviewService.listRecent(limit);
     }
 
-    /** 读取原始请求体（保留字节用于 HMAC）。 */
+    /**
+     * 读取原始请求体，用于 HMAC 签名验证。
+     *
+     * @return 请求体原文；IO 异常时返回 null（由调用方决定如何处理）
+     */
     private String readRawBody(HttpServletRequest request) {
         try (BufferedReader reader = request.getReader()) {
             return reader.lines().collect(Collectors.joining("\n"));
-        } catch (Exception e) {
-            log.error("读取 body 失败", e);
-            return "";
+        } catch (IOException e) {
+            log.error("读取 Webhook body 失败", e);
+            return null;
         }
-    }
-
-    private Integer toInt(Object o, int def) {
-        if (o instanceof Number n) return n.intValue();
-        if (o instanceof String s) {
-            try { return Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
-        }
-        return def;
     }
 }

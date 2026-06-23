@@ -1,6 +1,6 @@
 package com.agentforge.web.controller;
 
-import com.agentforge.web.service.LogQueryService;
+import com.agentforge.web.service.ILogQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LogController {
 
-    private final LogQueryService logQueryService;
+    private final ILogQueryService logQueryService;
 
     @GetMapping("/sql")
     public Map<String, Object> sqlLogs(

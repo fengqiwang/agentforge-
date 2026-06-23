@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -38,7 +39,7 @@ public class ColumnMapping {
      * - status ← 状态/status/交易状态/tran_stat
      */
     public static ColumnMapping autoDetect(String[] fileColumns) {
-        Map<String, String> mapping = new java.util.LinkedHashMap<>();
+        Map<String, String> mapping = new LinkedHashMap<>();
 
         String[][] keywords = {
                 {"tranno", "流水号|transaction_id|trans_no|交易流水|tranno|order_no"},
